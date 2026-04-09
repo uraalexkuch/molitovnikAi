@@ -1,0 +1,73 @@
+name: molitovnik
+description: Цифровий капелан та православний молитовник (Offline First).
+
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI, іконки та анімації
+  cupertino_icons: ^1.0.6
+  animations: ^2.0.8
+  sz_fancy_bottom_navigation: ^0.1.4
+  sizer: ^2.0.15
+  responsive_sizer: ^3.0.4+4
+  flutter_markdown: ^0.6.18
+
+  # State Management (Управління станом)
+  provider: ^6.1.2
+
+  # AI & Голос (Локально / Офлайн)
+  flutter_gemma: ^0.4.0
+  speech_to_text: ^6.6.2
+  sherpa_onnx: any
+  permission_handler: ^11.3.0
+  just_audio: ^0.9.40
+
+  # Безпека та Panic Wipe
+  flutter_secure_storage: ^10.0.0
+  encrypt: ^5.0.3
+  flutter_volume_controller: any
+
+  # Сховище (База даних RAG та повідомлень)
+  sqflite: ^2.3.0
+  path_provider: ^2.1.3
+  shared_preferences: ^2.2.3
+
+  local_auth: ^2.3.0
+  local_auth_android: ^1.0.36
+  local_auth_ios: ^1.1.0  # Змінюємо darwin на ios
+
+  audio_session: any
+  dio: any
+  background_downloader: any
+  path: any
+  pointycastle: any
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+# Вирішення конфліктів для Dart 3 та старих пакетів
+dependency_overrides:
+  platform: ^3.1.4
+
+flutter:
+  uses-material-design: true
+
+  # ВАЖЛИВО: assets має бути ПІД flutter (з відступом 2 пробіли)
+  assets:
+    - assets/images/
+    - assets/tts/
+    - assets/tts/espeak-ng-data/
+    - assets/knowledge_base/
+
+fonts:
+  - family: Church
+    fonts:
+      - asset: fonts/Blagovest.ttf
