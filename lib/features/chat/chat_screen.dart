@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'chat_provider.dart';
 import 'chat_input_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orthodox_cross_widget.dart';
 
@@ -19,7 +20,16 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    _handlePermissions();
     Future.microtask(() => context.read<ChatProvider>().loadHistory());
+  }
+
+  Future<void> _handlePermissions() async {
+    // Жорсткий запит дозволів на старті чату (ВИПРАВЛЕННЯ 5)
+    final status = await Permission.microphone.status;
+    if (status.isDenied || status.isLimited) {
+      await Permission.microphone.request();
+    }
   }
 
 

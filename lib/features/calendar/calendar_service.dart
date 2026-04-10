@@ -23,7 +23,7 @@ class CalendarService {
         }
       }
       
-      // Сортування від найближчого
+      // Сортування
       days.sort((a, b) => a.date.compareTo(b.date));
       return days;
     } catch (e) {
@@ -31,4 +31,9 @@ class CalendarService {
       return [];
     }
   }
+
+  static List<ChurchDay> filterByMonth(List<ChurchDay> allDays, int month) {
+    return allDays.where((day) => day.date.month == month).toList();
+  }
 }
+

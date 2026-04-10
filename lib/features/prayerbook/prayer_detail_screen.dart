@@ -3,8 +3,9 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:molitovnik/pages/Data/dummy_data.dart';
 import 'package:molitovnik/core/theme/app_theme.dart';
 import 'package:molitovnik/core/widgets/orthodox_cross_widget.dart';
+import '../../services/ai/offline_tts_service.dart';
 
-class PrayerDetailScreen extends StatelessWidget {
+class PrayerDetailScreen extends StatefulWidget {
   final String prayerId;
 
   const PrayerDetailScreen({
@@ -13,145 +14,205 @@ class PrayerDetailScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final selectedMeal = DUMMY_MEALS.firstWhere((meal) => meal.id == prayerId);
+  State<PrayerDetailScreen> createState() => _PrayerDetailScreenState();
+}
 
-    return ResponsiveSizer(
-      builder: (context, orientation, deviceType) {
-        return Scaffold(
-          body: NestedScrollView(
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                SliverAppBar(
-                  expandedHeight: 22.h,
-                  floating: false,
-                  pinned: true,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: AppTheme.ocuBurgundy),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 3.sp,
-                        horizontal: 12.sp,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: AppTheme.ocuBurgundy.withOpacity(0.2),
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          OrthodoxCrossWidget(
-                            size: 14,
-                            color: AppTheme.goldAccent.withOpacity(0.7),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Молитви',
-                            style: TextStyle(
-                              color: AppTheme.ocuBurgundy,
-                              fontFamily: 'Church',
-                              fontSize: 16.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    background: Container(
-                      color: AppTheme.ocuBurgundy,
-                      child: Center(
-                        child: Opacity(
-                          opacity: 0.1,
-                          child: OrthodoxCrossWidget(
-                            size: 100.sp,
-                            color: AppTheme.goldAccent,
-                          ),
-                        ),
-                      ),
-                    ),
+class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
+  bool _isPlaying = false;
+  String _title = "";
+  String _fullText = "";
+
+  @override
+  void initState() {
+    super.initState();
+    final selectedMeal = DUMMY_MEALS.firstWhere((meal) => meal.id == widget.prayerId);
+    _title = selectedMeal.title;
+    // Об'єднуємо всі кроки молитви в один текст для озвучення
+    _fullText = selectedMeal.steps.join(".\n");
+  }
+
+  @override
+  void dispose() {
+    // Обов'язково зупиняємо аудіо при виході з екрана
+    if (_isPlaying) {
+      OfflineTtsService.instance.stop();
+    }
+    super.dispose();
+  }
+
+  void _toggleAudio() async {
+    final tts = OfflineTtsService.instance;
+    if (_isPlaying) {
+      // Зупиняємо читання
+      await tts.stop();
+      if (mounted) setState(() => _isPlaying = false);
+    } else {
+      setState(() => _isPlaying = true);
+      
+      // Додаємо атмосферний вступ від імені капелана перед читанням
+      final speechText = "Помолимося разом, брате. $_title. $_fullText";
+      
+      await tts.speak(speechText);
+      // Коли відтворення завершиться, скидаємо стан
+      if (mounted) setState(() => _isPlaying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMeal = DUMMY_MEALS.firstWhere((meal) => meal.id == widget.prayerId);
+
+    return Scaffold(
+      backgroundColor: AppTheme.parchmentWhite,
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/old_paper3.jpg"),
+            fit: BoxFit.cover,
+            opacity: 0.15,
+          ),
+        ),
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 18.h,
+              pinned: true,
+              backgroundColor: AppTheme.chestnutHeader,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                title: Text(
+                  selectedMeal.title,
+                  style: TextStyle(
+                    fontFamily: 'Church',
+                    fontSize: 16.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ];
-            },
-            body: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: selectedMeal.steps.length,
-              itemBuilder: (ctx, index) => Column(
-                children: <Widget>[
-                  // Блок тексту молитви
-                  Container(
-                    width: double.infinity,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    padding: EdgeInsets.fromLTRB(18.sp, 16.sp, 18.sp, 12.sp),
-                    child: Column(
-                      children: [
-                        // ПРАЦЮЄМО: Заголовок кроку — бордовим кольором ПЦУ з хрестами по боках
-                        if (selectedMeal.titlestep.length > index)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 12.sp),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                background: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Opacity(
+                      opacity: 0.1,
+                      child: OrthodoxCrossWidget(
+                        size: 80.sp,
+                        color: AppTheme.goldAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                // Міні-кнопка в шапці також залишається синхронізованою
+                IconButton(
+                  icon: Icon(
+                    _isPlaying ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+                    color: AppTheme.goldAccent,
+                    size: 24.sp,
+                  ),
+                  onPressed: _toggleAudio,
+                ),
+              ],
+            ),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(20.sp, 25.sp, 20.sp, 80.sp), // Відступ знизу для FAB
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final stepTitle = selectedMeal.titlestep.length > index 
+                        ? selectedMeal.titlestep[index] 
+                        : null;
+                    final stepText = selectedMeal.steps[index];
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 25.sp),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (stepTitle != null) ...[
+                            Row(
                               children: [
-                                const OrthodoxCrossWidget(
-                                  size: 14,
+                                Container(
+                                  width: 4,
+                                  height: 20,
                                   color: AppTheme.ocuBurgundy,
                                 ),
                                 const SizedBox(width: 8),
-                                Flexible(
+                                Expanded(
                                   child: Text(
-                                    selectedMeal.titlestep[index],
-                                    textAlign: TextAlign.center,
+                                    stepTitle.toUpperCase(),
                                     style: TextStyle(
                                       fontFamily: 'Church',
-                                      fontSize: 18.2.sp,
+                                      fontSize: 17.sp,
                                       fontWeight: FontWeight.bold,
                                       color: AppTheme.ocuBurgundy,
-                                      letterSpacing: 0.5,
+                                      letterSpacing: 1,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                const OrthodoxCrossWidget(
-                                  size: 14,
-                                  color: AppTheme.ocuBurgundy,
-                                ),
                               ],
                             ),
+                            SizedBox(height: 12.sp),
+                          ],
+                          Text(
+                            stepText,
+                            style: TextStyle(
+                              fontFamily: 'Church',
+                              fontSize: 18.sp,
+                              color: AppTheme.textMain,
+                              height: 1.6,
+                            ),
                           ),
-
-                        // Текст молитви — пергаментний на темному фоні
-                        Text(
-                          selectedMeal.steps[index],
-                          style: TextStyle(
-                            wordSpacing: 3,
-                            fontFamily: 'Church',
-                            fontSize: 17.sp,
-                            fontWeight: FontWeight.normal,
-                            color: AppTheme.textMain,
-                            height: 1.55,
-                          ),
-                          softWrap: true,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Розподільник — хрест ПЦУ замість зображення b.png
-                  const PrayerDividerCross(),
-                ],
+                          if (index < selectedMeal.steps.length - 1)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20.sp),
+                              child: Center(
+                                child: OrthodoxCrossWidget(
+                                  size: 20.sp,
+                                  color: AppTheme.goldAccent.withOpacity(0.3),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                  childCount: selectedMeal.steps.length,
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+      
+      // РОЗШИРЕНА КНОПКА СЛУХАТИ
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        child: FloatingActionButton.extended(
+          onPressed: _toggleAudio,
+          backgroundColor: _isPlaying ? AppTheme.surfaceLight : AppTheme.ocuBurgundy,
+          foregroundColor: _isPlaying ? AppTheme.ocuBurgundy : Colors.white,
+          elevation: _isPlaying ? 2 : 6,
+          icon: Icon(
+            _isPlaying ? Icons.stop_rounded : Icons.volume_up_rounded, 
+            size: 22.sp
           ),
-        );
-      },
+          label: Text(
+            _isPlaying ? 'ЗУПИНИТИ ЧИТАННЯ' : 'СЛУХАТИ КАПЕЛАНА',
+            style: TextStyle(
+              fontFamily: 'Church',
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              fontSize: 15.sp,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

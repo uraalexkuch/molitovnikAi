@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
 import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 
 /// Сервіс для локального (Offline) синтезу мовлення (TTS).
@@ -18,11 +19,27 @@ class OfflineTtsService {
   bool _isInitialized = false;
 
   /// Ініціалізація: копіювання моделей з assets у файлову систему пристрою.
-  /// Це необхідно, оскільки C++ ядро Sherpa-ONNX вимагає прямих шляхів до файлів.
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
+      // Налаштування аудіо-сесії (ВИПРАВЛЕННЯ 3)
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.none,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        avAudioSessionRouteSharingPolicy: AVAudioSessionRouteSharingPolicy.defaultPolicy,
+        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.speech,
+          flags: AndroidAudioFlags.none,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+
       final docDir = await getApplicationDocumentsDirectory();
       final ttsDir = Directory(p.join(docDir.path, 'tts'));
       if (!ttsDir.existsSync()) ttsDir.createSync(recursive: true);
@@ -42,31 +59,23 @@ class OfflineTtsService {
         }
       }
 
-      // 2. Копіюємо espeak-ng-data (критично для VITS)
-      // Оскільки Flutter не дозволяє лістинг асетів, ми копіюємо основні файли
-      // необхідні для роботи української локалі.
-      final espeakDir = Directory(p.join(ttsDir.path, 'espeak-ng-data'));
-      if (!espeakDir.existsSync()) {
-        await _copyEspeakData(ttsDir.path);
-      }
+      // 2. Копіюємо espeak-ng-data (ВИПРАВЛЕННЯ 2)
+      await _copyEspeakData(ttsDir.path);
 
-      // ВИПРАВЛЕНО: Використовуємо класи TTS замість ASR
       final modelConfig = sherpa.OfflineTtsModelConfig(
         vits: sherpa.OfflineTtsVitsModelConfig(
           model: p.join(ttsDir.path, 'uk_UA-ukrainian_tts-medium.onnx'),
-          lexicon: "", // Можна залишити порожнім, якщо tokens достатньо
+          lexicon: "",
           tokens: p.join(ttsDir.path, 'tokens.txt'),
           dataDir: p.join(ttsDir.path, 'espeak-ng-data'),
           noiseScale: 0.667,
           noiseScaleW: 0.8,
-          //lengthPenalty: 1.0,
         ),
         numThreads: 1,
-        debug: true,
+        debug: kDebugMode,
         provider: "cpu",
       );
 
-      // ВИПРАВЛЕНО: Конструктор приймає OfflineTtsConfig як позиційний аргумент
       _tts = sherpa.OfflineTts(
         sherpa.OfflineTtsConfig(
           model: modelConfig,
@@ -81,51 +90,51 @@ class OfflineTtsService {
     }
   }
 
-  /// Допоміжний метод для копіювання структури espeak-ng-data
+  /// Копіювання espeak-ng-data (ВИПРАВЛЕННЯ 2)
   Future<void> _copyEspeakData(String ttsPath) async {
-    const base = 'assets/tts/espeak-ng-data';
     final targetBase = p.join(ttsPath, 'espeak-ng-data');
-
-    // Список критичних файлів для кирилиці/української
-    final files = [
+    
+    // Список обов'язкових файлів та піддиректорій для української мови
+    final filesToCopy = [
       'config',
       'phontab',
       'phonindex',
       'phondata',
       'intonations',
-      'uk_dict',      // Критично для української
-      'ru_dict',      // Часто використовується як фолбек або для спільних фонетик
-      'en_dict',
+      'uk_dict',
+      'lang/zle/uk', // Східнослов'янська група
     ];
 
-    for (final file in files) {
+    for (final relativePath in filesToCopy) {
+      final assetPath = 'assets/tts/espeak-ng-data/$relativePath';
+      final targetPath = p.join(targetBase, relativePath);
+      
+      final targetFile = File(targetPath);
+      if (targetFile.existsSync()) continue;
+
       try {
-        final data = await rootBundle.load('$base/$file');
-        final targetFile = File(p.join(targetBase, file));
-        if (!targetFile.parent.existsSync()) targetFile.parent.createSync(recursive: true);
+        final data = await rootBundle.load(assetPath);
+        if (!targetFile.parent.existsSync()) {
+          targetFile.parent.createSync(recursive: true);
+        }
         await targetFile.writeAsBytes(data.buffer.asUint8List());
-      } catch (_) {
-        // Пропускаємо, якщо файл відсутній
+      } catch (e) {
+        debugPrint('⚠️ Помилка копіювання $assetPath: $e');
       }
     }
   }
 
-  /// Озвучити текст: генерує WAV та відтворює через just_audio
+  /// Озвучити текст (ВИПРАВЛЕННЯ 4: Race condition fix)
   Future<void> speak(String text) async {
     if (!_isInitialized || _tts == null) {
-      debugPrint('⚠️ OfflineTtsService: не ініціалізовано. Спроба ініціалізації...');
       await initialize();
-      if (!_isInitialized || _tts == null) {
-        debugPrint('❌ OfflineTtsService: не вдалося ініціалізувати для виклику speak.');
-        return;
-      }
+      if (!_isInitialized || _tts == null) return;
     }
 
     try {
-      // Зупиняємо попереднє мовлення перед новим
       await stop();
 
-      final audio = _tts!.generate(text: text, sid: 0, speed: 1.0);
+      final audio = await Task.run(() => _tts!.generate(text: text, sid: 0, speed: 1.0));
       if (audio.samples.isEmpty) return;
 
       final wavData = _createWavHeader(
@@ -133,7 +142,6 @@ class OfflineTtsService {
         audio.sampleRate.toInt(),
       );
 
-      // Конвертуємо Float32 вміст Sherpa у Int16 для стандартного WAV
       final int16Samples = Int16List(audio.samples.length);
       for (var i = 0; i < audio.samples.length; i++) {
         int16Samples[i] = (audio.samples[i] * 32767).clamp(-32768, 32767).toInt();
@@ -146,8 +154,10 @@ class OfflineTtsService {
       builder.add(wavData);
       builder.add(int16Samples.buffer.asUint8List());
 
-      await tempFile.writeAsBytes(builder.toBytes());
+      // Чекаємо повного запису файлу перед відтворенням
+      await tempFile.writeAsBytes(builder.toBytes(), flush: true);
 
+      // Встановлюємо шлях і чекаємо ініціалізації плеєра
       await _audioPlayer.setFilePath(tempFile.path);
       await _audioPlayer.play();
     } catch (e) {

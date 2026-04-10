@@ -96,6 +96,13 @@ class AppTheme {
     ),
   );
 
+  // ── Кольори для Молитовника ───────────────────────────────
+  static const Color chestnutHeader = Color(0xFF4A2C2A); // Темно-каштановий для шапки
+  static const Color morningStripe  = Color(0xFFFFD700); // Теплий жовтий (Ранок)
+  static const Color battleStripe   = Color(0xFFB22222); // Червоний (Бойові)
+  static const Color eveningStripe  = Color(0xFF1E90FF); // Синій (Вечір)
+  static const Color parchmentWhite = Color(0xFFF9F7F2); // Колір основи пергаменту
+
   // Для сумісності з попередніми викликами, якщо вони ще не рефакторені
   static const Color backgroundDark = backgroundLight;
   static const Color surfaceDark    = surfaceLight;
@@ -103,3 +110,4 @@ class AppTheme {
   static const Color parchment      = textMain;
   static const Color parchmentDim   = textDim;
 }
+
