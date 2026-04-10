@@ -6,7 +6,6 @@ import 'widgets/prayer_header.dart';
 import 'widgets/featured_prayer_card.dart';
 import 'widgets/category_chip_bar.dart';
 import 'widgets/prayer_list_item.dart';
-import 'prayer_list_screen.dart';
 import 'prayer_detail_screen.dart';
 import '../../services/ai/offline_tts_service.dart';
 

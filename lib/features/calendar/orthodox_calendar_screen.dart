@@ -16,7 +16,7 @@ class OrthodoxCalendarScreen extends StatefulWidget {
 
 class _OrthodoxCalendarScreenState extends State<OrthodoxCalendarScreen> {
   int _selectedMonth = DateTime.now().month;
-  int _selectedYear = DateTime.now().year;
+  final int _selectedYear = DateTime.now().year;
   List<ChurchDay> _allDays = [];
   bool _isLoading = true;
 

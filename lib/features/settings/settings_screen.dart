@@ -5,6 +5,7 @@ import '../../services/storage/database_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../onboarding/model_selection_dialog.dart';
 import 'gratitude_makariy_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +16,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _biometricService = BiometricService.instance;
+  final _secureStorage = const FlutterSecureStorage();
   bool _biometricEnabled = false;
   bool _isBiometricAvailable = false;
 
@@ -31,6 +33,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _isBiometricAvailable = available;
       _biometricEnabled = enabled;
     });
+  }
+
+  void _showPinSetupDialog() {
+    final pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceLight,
+        title: const Text('Встановіть PIN-код', style: TextStyle(color: AppTheme.ocuBurgundy, fontFamily: 'Church')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Цей код захистить ваш додаток та зашифрує повідомлення.', style: TextStyle(color: AppTheme.textMain)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              style: const TextStyle(color: AppTheme.textMain, fontSize: 24, letterSpacing: 8),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: '****',
+                hintStyle: TextStyle(color: AppTheme.textDim.withOpacity(0.3)),
+                counterText: "",
+                enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.goldAccent)),
+                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.ocuBurgundy)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('СКАСУВАТИ', style: TextStyle(color: AppTheme.textDim)),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (pinController.text.length == 4) {
+                // 1. Зберігаємо ПІН у безпечне сховище
+                await _secureStorage.write(key: 'user_pin', value: pinController.text);
+                
+                // 2. Ініціалізуємо шифрування бази даних з новим ПІНом
+                await EncryptionService().initialize(pinController.text);
+                
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('PIN-код успішно встановлено'),
+                      backgroundColor: AppTheme.ocuBurgundy,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('ЗБЕРЕГТИ', style: TextStyle(color: AppTheme.ocuBurgundy, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -65,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Змінити PIN-код', style: TextStyle(color: AppTheme.textMain)),
             leading: const Icon(Icons.lock_outline, color: AppTheme.ocuBurgundy),
             trailing: const Icon(Icons.chevron_right, color: AppTheme.textDim),
-            onTap: () {},
+            onTap: _showPinSetupDialog,
           ),
           const Divider(color: Colors.white10),
           
@@ -91,20 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const Divider(color: Colors.white10),
-
-          _buildSectionTitle('Про проєкт'),
-          ListTile(
-            title: const Text('Слово від капелана', style: TextStyle(color: AppTheme.textMain)),
-            subtitle: const Text('Подяка та натхнення', style: TextStyle(color: AppTheme.textDim)),
-            leading: const Icon(Icons.favorite_border_rounded, color: AppTheme.ocuBurgundy),
-            trailing: const Icon(Icons.chevron_right, color: AppTheme.textDim),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GratitudeMakariyScreen()),
-              );
-            },
-          ),
-          const Divider(color: Colors.white10),
+          
           
           _buildSectionTitle('Panic Wipe (Екстрений режим)', color: AppTheme.ocuBurgundy),
           const ListTile(

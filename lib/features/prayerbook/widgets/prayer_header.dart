@@ -62,7 +62,7 @@ class PrayerHeader extends StatelessWidget {
           ),
           SizedBox(height: 15.sp),
           // Підзаголовок або іконки категорій
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _HeaderIconButton(icon: Icons.wb_sunny_outlined, label: "Ранок", color: AppTheme.morningStripe),

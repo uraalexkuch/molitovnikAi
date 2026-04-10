@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/home_screen.dart';
 import 'features/prayerbook/prayerbook_screen.dart';
@@ -11,20 +11,23 @@ import 'services/ai/model_management_service.dart';
 import 'features/onboarding/model_selection_dialog.dart';
 import 'core/widgets/orthodox_cross_widget.dart';
 import 'services/ai/offline_tts_service.dart';
+import 'features/settings/gratitude_makariy_screen.dart';
 
+
+import 'features/auth/auth_screen.dart';
 
 class MolitovnikApp extends StatelessWidget {
   const MolitovnikApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Sizer(
+    return ResponsiveSizer(
       builder: (context, orientation, deviceType) => MaterialApp(
         title: 'Молитовник & Капелан',
         theme: AppTheme.lightTheme,
         themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false,
-        home: const MainShell(),
+        home: const AuthScreen(),
       ),
     );
   }
@@ -92,9 +95,10 @@ class _MainShellState extends State<MainShell> {
           children: [
             const HomeScreen(),
             const ChatScreen(),
-            _buildTabNavigator(2, const OrthodoxCalendarScreen()),
-            _buildTabNavigator(3, const PrayerbookScreen()),
+            _buildTabNavigator(2, const PrayerbookScreen()),
+            _buildTabNavigator(3, const OrthodoxCalendarScreen()),
             const SettingsScreen(),
+            _buildTabNavigator(5, const GratitudeMakariyScreen()),
           ],
         ),
         bottomNavigationBar: NavigationBar(
@@ -128,6 +132,11 @@ class _MainShellState extends State<MainShell> {
               icon: Icon(Icons.settings_outlined),
               selectedIcon: Icon(Icons.settings, color: AppTheme.ocuBurgundy),
               label: 'Налаштування',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.info_outline),
+              selectedIcon: Icon(Icons.info, color: AppTheme.ocuBurgundy),
+              label: 'Про проєкт',
             ),
           ],
         ),

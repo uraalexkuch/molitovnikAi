@@ -38,10 +38,6 @@ class BiometricService {
     try {
       return await _auth.authenticate(
         localizedReason: 'Підтвердіть особу',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
         authMessages: <AuthMessages>[
           const AndroidAuthMessages(
             signInTitle: 'Авторизація',

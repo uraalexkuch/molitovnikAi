@@ -6,6 +6,7 @@ class ChurchDay {
   final String? description;
   final FastingType fastingType;
   final bool isGreatFeast; // Дванадесяті свята (виділяються червоним/золотим)
+  final List<String>? prayers;
 
   const ChurchDay({
     required this.date,
@@ -13,6 +14,7 @@ class ChurchDay {
     this.description,
     this.fastingType = FastingType.none,
     this.isGreatFeast = false,
+    this.prayers,
   });
 
   factory ChurchDay.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class ChurchDay {
       description: json['description'],
       isGreatFeast: json['isGreatFeast'] ?? false,
       fastingType: _parseFastingType(json['fastingType']),
+      prayers: json['prayers'] != null ? List<String>.from(json['prayers']) : null,
     );
   }
 

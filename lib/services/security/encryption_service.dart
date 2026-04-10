@@ -30,6 +30,33 @@ class EncryptionService {
     _key = encrypt.Key(derivedKeyBytes);
   }
 
+  /// Ініціалізація за умовчанням або за збереженим ПІНом
+  Future<void> initializeDefaultIfNeeded() async {
+    if (_key != null) return;
+    
+    String? savedPin;
+    try {
+      savedPin = await _secureStorage.read(key: 'user_pin');
+    } catch (e) {
+      // Якщо Keystore пошкоджений (часта помилка на Android), скидаємо сховище
+      try {
+        await _secureStorage.deleteAll();
+      } catch (_) {}
+    }
+    
+    if (savedPin != null) {
+      try {
+        await initialize(savedPin);
+      } catch (e) {
+        await initialize("0000");
+      }
+    } else {
+      // Якщо ПІН не задано, використовуємо дефолтний системний ключ "0000"
+      // Це дозволяє базі даних працювати відразу після встановлення додатку
+      await initialize("0000"); 
+    }
+  }
+
   /// Шифрування тексту (AES-GCM)
   String encryptText(String text) {
     if (_key == null) throw Exception('Шифрування не ініціалізовано');

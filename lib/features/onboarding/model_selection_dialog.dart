@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../../services/ai/model_management_service.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -215,7 +215,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
-                value: progress,
+                value: progress.clamp(0.0, 1.0),
                 backgroundColor: AppTheme.surfaceMid,
                 color: AppTheme.ocuBurgundy,
                 minHeight: 12,
@@ -223,7 +223,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             ),
             const SizedBox(height: 12),
             Text(
-              '${(progress * 100).toStringAsFixed(1)}%',
+              '${(progress.clamp(0.0, 1.0) * 100).toStringAsFixed(1)}%',
               style: const TextStyle(color: AppTheme.goldLight, fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 24),
@@ -250,13 +250,21 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
       _selectedModel!,
       onCompleted: (path) {
         if (mounted) {
-          Navigator.of(context).pop();
+          // Показуємо успіх ДО закриття, щоб уникнути помилок контексту
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('ШІ-модель завантажена успішно!'),
+              content: Text('📜 Модель завантажена успішно!'),
               backgroundColor: AppTheme.ocuBurgundy,
+              behavior: SnackBarBehavior.floating,
             ),
           );
+
+          // Даємо 200мс на спокійне закриття діалогу
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          });
         }
       },
       onError: (err) {

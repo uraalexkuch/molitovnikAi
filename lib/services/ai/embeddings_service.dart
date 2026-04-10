@@ -5,12 +5,10 @@ class EmbeddingsService {
   static final EmbeddingsService instance = EmbeddingsService._();
   EmbeddingsService._();
 
-  bool _isReady = false;
 
   Future<void> initialize() async {
     // У flutter_gemma 0.4.6 немає EmbeddingModel,
     // тому відразу використовуємо надійний хеш-метод (Fallback).
-    _isReady = true;
     debugPrint('✅ EmbeddingsService: готово (Hash Mode)');
   }
 

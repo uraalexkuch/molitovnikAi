@@ -161,6 +161,50 @@ class ChurchDayCard extends StatelessWidget {
                           ),
                         ),
                       ],
+                      if (day.prayers != null && day.prayers!.isNotEmpty) ...[
+                        SizedBox(height: 10.sp),
+                        Container(
+                          padding: EdgeInsets.all(10.sp),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceDark.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppTheme.ocuBurgundy.withOpacity(0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.menu_book, size: 14, color: AppTheme.ocuBurgundy),
+                                  SizedBox(width: 5.sp),
+                                  Text(
+                                    "Молитви свята:",
+                                    style: TextStyle(
+                                      fontFamily: 'Church',
+                                      color: AppTheme.ocuBurgundy,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.sp),
+                              ...day.prayers!.map((prayer) => Padding(
+                                padding: EdgeInsets.only(bottom: 6.sp),
+                                child: Text(
+                                  prayer,
+                                  style: TextStyle(
+                                    color: AppTheme.textMain,
+                                    fontSize: 13.sp,
+                                    height: 1.4,
+                                    fontFamily: 'Church',
+                                  ),
+                                ),
+                              )),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

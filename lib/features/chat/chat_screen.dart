@@ -20,16 +20,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _handlePermissions();
+    // Do not request permissions here; it causes deadlocks. 
+    // ChatInputWidget handles microphone permission on tap.
     Future.microtask(() => context.read<ChatProvider>().loadHistory());
-  }
-
-  Future<void> _handlePermissions() async {
-    // Жорсткий запит дозволів на старті чату (ВИПРАВЛЕННЯ 5)
-    final status = await Permission.microphone.status;
-    if (status.isDenied || status.isLimited) {
-      await Permission.microphone.request();
-    }
   }
 
 
@@ -96,7 +89,11 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, provider, child) {
-                if (provider.messages.isEmpty && !provider.isLoading) {
+                if (provider.isLoading && provider.messages.isEmpty) {
+                  return _buildLoadingState();
+                }
+                
+                if (provider.messages.isEmpty) {
                   return _buildEmptyState();
                 }
 
@@ -123,6 +120,35 @@ class _ChatScreenState extends State<ChatScreen> {
           ChatInputWidget(
             onSend: (text) => context.read<ChatProvider>().sendMessage(text),
             isLoading: context.watch<ChatProvider>().isLoading,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            color: AppTheme.goldAccent,
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Готуюся до бесіди...',
+            style: TextStyle(
+              color: AppTheme.textDim,
+              fontSize: 16,
+              fontFamily: 'Church',
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Налаштовую зв\'язок з небесами...',
+            style: TextStyle(color: AppTheme.textDim, fontSize: 12),
           ),
         ],
       ),

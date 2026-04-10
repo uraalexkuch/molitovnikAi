@@ -37,6 +37,9 @@ ${SystemPrompt.chaplain}
     if (_isModelLoaded || _isInitializing) return;
     _isInitializing = true;
     try {
+      // Даємо системі час на фіналізацію файлових операцій після завантаження
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       await FlutterGemma.initialize();
       await Future.wait([_initModel(), _ragService.initialize()]);
     } catch (e) {
