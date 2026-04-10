@@ -7,7 +7,7 @@ class CategoryItem extends StatelessWidget {
   final String imgPath;
   final String name;
 
-  CategoryItem(this.id, this.imgPath, this.name);
+  const CategoryItem(this.id, this.imgPath, this.name, {super.key});
 
   void selectCategory(BuildContext ctx) {
     Navigator.of(ctx).pushNamed(CategoriesMealsScreen.routeName, arguments: {
@@ -24,7 +24,7 @@ class CategoryItem extends StatelessWidget {
         child:  Container(
           margin: EdgeInsets.all(10.sp),
           decoration: BoxDecoration(
-            image: DecorationImage(
+            image: const DecorationImage(
                 image: AssetImage("images/paperold.jpg"), fit: BoxFit.fill),
             border: Border.all(color: Colors.black, width: 8.sp),
             borderRadius: BorderRadius.circular(15.sp),

@@ -4,6 +4,8 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 
 class About extends StatelessWidget {
   static const routeName = '/category-about';
+
+  const About({super.key});
   @override
   Widget build(BuildContext context) {
     return ResponsiveSizer(builder: (context, orientation, deviceType) {
@@ -23,18 +25,18 @@ class About extends StatelessWidget {
               width: 100.w,
               fit: BoxFit.cover,
             ),
-            Divider(),
+            const Divider(),
             Container(
                 height: 55.h,
                 width: 100.w,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   image: DecorationImage(
                       image: AssetImage("images/paperold.jpg"),
 
                       fit: BoxFit.fill)),
 
-              child: Padding(
-                padding: const EdgeInsets.only(left:8.0),
+              child: const Padding(
+                padding: EdgeInsets.only(left:8.0),
                 child: Center(
                   child: Text(
                     '   Додаток створенний по Божій благодаті та з благословення ігумена Макарія,  настоятеля Собору Волинських Святих у Волновасі, ПЦУ.\n,За сонову взято  "Молитовник Захисника Вітчизни" від  Свято-Юрівського храму м. Вишневе, \n Аудіо версії з вільного доступу YouTube\n  Пропозиції надсилfти  на адресу mag_ura@ukr.net',

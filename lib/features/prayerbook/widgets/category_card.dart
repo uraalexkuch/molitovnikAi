@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:molitovnik/core/theme/app_theme.dart';
+import 'package:molitovnik/core/widgets/orthodox_cross_widget.dart';
 import 'package:molitovnik/features/prayerbook/prayer_list_screen.dart';
 
 class CategoryCard extends StatelessWidget {
@@ -29,54 +31,66 @@ class CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => selectCategory(context),
+      borderRadius: BorderRadius.circular(18.sp),
       child: Container(
-        margin: EdgeInsets.all(10.sp),
+        margin: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 8.sp),
         decoration: BoxDecoration(
-          image: const DecorationImage(
-            image: AssetImage("assets/images/paperold.jpg"),
-            fit: BoxFit.fill,
+          color: AppTheme.surfaceLight,
+          borderRadius: BorderRadius.circular(20.sp),
+          border: Border.all(
+            color: AppTheme.goldAccent.withOpacity(0.2),
+            width: 0.8,
           ),
-          border: Border.all(color: Colors.black, width: 4.sp),
-          borderRadius: BorderRadius.circular(15.sp),
-        ),
-        child: Stack(
-          children: <Widget>[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15.sp),
-              child: Image.asset(
-                imgPath,
-                height: 75.h,
-                width: double.infinity,
-                fit: BoxFit.fill,
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            Positioned(
-              bottom: 10.sp,
-              right: 5.sp,
-              child: Container(
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.sp),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              // Великий центральний хрест замість картинки
+              OrthodoxCrossWidget(
+                size: 48.sp,
+                color: AppTheme.goldAccent.withOpacity(0.15),
+              ),
+              const Spacer(),
+              
+              // Назва категорії
+              Container(
+                width: double.infinity,
                 padding: EdgeInsets.symmetric(
-                  vertical: 5.sp,
-                  horizontal: 10.sp,
+                  vertical: 16.sp,
+                  horizontal: 12.sp,
                 ),
-                width: 100.w,
-                height: 18.h,
-                color: Colors.black54,
-                child: Center(
-                  child: Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: "Church",
-                      fontSize: 22.sp,
-                      color: Colors.white,
+                decoration: BoxDecoration(
+                  color: AppTheme.ocuBurgundy,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppTheme.goldAccent.withOpacity(0.3),
+                      width: 0.8,
                     ),
-                    softWrap: true,
-                    overflow: TextOverflow.fade,
+                  ),
+                ),
+                child: Text(
+                  name.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Church',
+                    fontSize: 22.sp,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );

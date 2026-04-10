@@ -7,7 +7,7 @@ class AudioItem extends StatelessWidget {
   final String imgPath;
   final String name;
 
-  AudioItem(this.id, this.imgPath, this.name);
+  const AudioItem(this.id, this.imgPath, this.name, {super.key});
 
   void selectCategory(BuildContext ctx) {
     Navigator.of(ctx).pushNamed(Player.routeName, arguments: id);
@@ -21,7 +21,7 @@ class AudioItem extends StatelessWidget {
           return Container(
             margin: const EdgeInsets.only(left: 5.0, right: 5.0, bottom: 5.0),
             decoration: BoxDecoration(
-              image: DecorationImage(
+              image: const DecorationImage(
                   image: AssetImage("images/paperold.jpg"), fit: BoxFit.fill),
               border: Border.all(color: Colors.black, width: 8.sp),
               borderRadius: BorderRadius.circular(15.sp),

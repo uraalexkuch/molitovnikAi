@@ -5,6 +5,8 @@ import 'package:molitovnik/pages/Data/widgets/audio_item.dart';
 
 
 class ManagePlaylist extends StatelessWidget {
+  const ManagePlaylist({super.key});
+
 
   @override
   Widget build(BuildContext context) {

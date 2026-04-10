@@ -17,6 +17,10 @@ class DatabaseService {
     return _database!;
   }
 
+  Future<void> initialize() async {
+    await database;
+  }
+
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'chaplain_v2.db');
@@ -82,6 +86,11 @@ class DatabaseService {
         'content': isEncrypted ? _encryptionService.decryptText(content) : content,
       };
     }).toList();
+  }
+
+  Future<void> clearMessages() async {
+    final db = await database;
+    await db.delete('messages');
   }
 
   // --- Методи для Panic Wipe ---

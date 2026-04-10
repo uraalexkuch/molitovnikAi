@@ -4,6 +4,7 @@ import '../../services/security/encryption_service.dart';
 import '../../services/storage/database_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../onboarding/model_selection_dialog.dart';
+import 'gratitude_makariy_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -35,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: AppTheme.appBarGradient),
@@ -47,9 +48,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionTitle('Автентифікація'),
           if (_isBiometricAvailable)
             SwitchListTile(
-              activeColor: AppTheme.liturgicalRed,
-              title: const Text('Біометричний вхід'),
-              subtitle: const Text('Вхід без вводу PIN-коду', style: TextStyle(color: Colors.white38)),
+              activeThumbColor: AppTheme.ocuBurgundy,
+              title: const Text('Біометричний вхід', style: TextStyle(color: AppTheme.textMain)),
+              subtitle: const Text('Вхід без вводу PIN-коду', style: TextStyle(color: AppTheme.textDim)),
               value: _biometricEnabled,
               onChanged: (bool value) async {
                 if (value) {
@@ -61,27 +62,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ListTile(
-            title: const Text('Змінити PIN-код'),
-            leading: const Icon(Icons.lock_outline, color: AppTheme.goldAccent),
-            trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+            title: const Text('Змінити PIN-код', style: TextStyle(color: AppTheme.textMain)),
+            leading: const Icon(Icons.lock_outline, color: AppTheme.ocuBurgundy),
+            trailing: const Icon(Icons.chevron_right, color: AppTheme.textDim),
             onTap: () {},
           ),
           const Divider(color: Colors.white10),
           
           _buildSectionTitle('Штучний інтелект'),
           ListTile(
-            title: const Text('Керування моделями'),
-            subtitle: const Text('Завантаження та вибір сувоїв знань', style: TextStyle(color: Colors.white38)),
-            leading: const Icon(Icons.auto_awesome_rounded, color: AppTheme.goldAccent),
-            trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+            title: const Text('Керування моделями', style: TextStyle(color: AppTheme.textMain)),
+            subtitle: const Text('Завантаження та вибір сувоїв знань', style: TextStyle(color: AppTheme.textDim)),
+            leading: const Icon(Icons.auto_awesome_rounded, color: AppTheme.ocuBurgundy),
+            trailing: const Icon(Icons.chevron_right, color: AppTheme.textDim),
             onTap: () => ModelSelectionDialog.show(context),
           ),
           const Divider(color: Colors.white10),
 
           _buildSectionTitle('Конфіденційність'),
           ListTile(
-            title: const Text('Очистити історію чату'),
-            subtitle: const Text('Видаляє всі повідомлення з бази', style: TextStyle(color: Colors.white38)),
+            title: const Text('Очистити історію чату', style: TextStyle(color: AppTheme.textMain)),
+            subtitle: const Text('Видаляє всі повідомлення з бази', style: TextStyle(color: AppTheme.textDim)),
             leading: const Icon(Icons.delete_sweep_outlined, color: Colors.orange),
             onTap: () => _confirmAction(
               context, 
@@ -90,18 +91,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const Divider(color: Colors.white10),
+
+          _buildSectionTitle('Про проєкт'),
+          ListTile(
+            title: const Text('Слово від капелана', style: TextStyle(color: AppTheme.textMain)),
+            subtitle: const Text('Подяка та натхнення', style: TextStyle(color: AppTheme.textDim)),
+            leading: const Icon(Icons.favorite_border_rounded, color: AppTheme.ocuBurgundy),
+            trailing: const Icon(Icons.chevron_right, color: AppTheme.textDim),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const GratitudeMakariyScreen()),
+              );
+            },
+          ),
+          const Divider(color: Colors.white10),
           
-          _buildSectionTitle('Panic Wipe (Екстрений режим)', color: AppTheme.liturgicalRed),
+          _buildSectionTitle('Panic Wipe (Екстрений режим)', color: AppTheme.ocuBurgundy),
           const ListTile(
-            title: Text('Активація через Volume Down'),
-            subtitle: Text('Швидке натискання 3 рази для знищення даних', style: TextStyle(color: Colors.white38)),
-            leading: Icon(Icons.warning_amber_rounded, color: AppTheme.liturgicalRed),
+            title: Text('Активація через Volume Down', style: TextStyle(color: AppTheme.textMain)),
+            subtitle: Text('Швидке натискання 3 рази для знищення даних', style: TextStyle(color: AppTheme.textDim)),
+            leading: Icon(Icons.warning_amber_rounded, color: AppTheme.ocuBurgundy),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.liturgicalRed, 
+                backgroundColor: AppTheme.ocuBurgundy, 
                 foregroundColor: Colors.white,
                 elevation: 4,
               ),
@@ -139,25 +154,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
-        title: Text(title, style: TextStyle(color: isCritical ? AppTheme.liturgicalRed : AppTheme.goldAccent)),
+        backgroundColor: AppTheme.surfaceLight,
+        title: Text(title, style: TextStyle(color: isCritical ? AppTheme.ocuBurgundy : AppTheme.goldAccent)),
         content: Text(
           isCritical 
             ? 'Ця дія безповоротна. Усі ключі, повідомлення та налаштування будуть стерті!' 
             : 'Ви впевнені?',
-          style: const TextStyle(color: AppTheme.parchment),
+          style: const TextStyle(color: AppTheme.textMain),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), 
-            child: const Text('СКАСУВАТИ', style: TextStyle(color: Colors.white54))
+            child: const Text('СКАСУВАТИ', style: TextStyle(color: AppTheme.textDim))
           ),
           TextButton(
             onPressed: () {
               action();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Виконано успішно'), backgroundColor: AppTheme.liturgicalRed)
+                const SnackBar(content: Text('Виконано успішно'), backgroundColor: AppTheme.ocuBurgundy)
               );
             }, 
             child: Text('ТАК, ВИКОНАТИ', style: TextStyle(color: isCritical ? Colors.red : Colors.blue))

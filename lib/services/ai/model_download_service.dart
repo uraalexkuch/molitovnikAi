@@ -49,8 +49,9 @@ class ModelDownloadService {
     );
 
     FileDownloader().registerCallbacks(
-      onProgress: (progress) => onProgress(progress),
-      onStatus: (status) async {
+      cbProgress: (update) => onProgress(update.progress),
+      cbStatus: (update) async {
+        final status = update.status;
         if (status == TaskStatus.complete) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool(_isDownloadedKey, true);

@@ -6,6 +6,8 @@ import '../widgets/meal_item.dart';
 class CategoriesMealsScreen extends StatelessWidget {
   static const routeName = '/category-meals';
 
+  const CategoriesMealsScreen({super.key});
+
   // final String categoryId;
   // final String categoryTitle;
 
@@ -33,7 +35,7 @@ class CategoriesMealsScreen extends StatelessWidget {
           child:Scaffold(
           appBar: AppBar(
           title: Text(categoryTitle!,
-          style: TextStyle(
+          style: const TextStyle(
           fontFamily: "Church",
           fontSize: 20,
           color: Colors.white,
@@ -41,7 +43,7 @@ class CategoriesMealsScreen extends StatelessWidget {
       )),
       body:
       Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
       image: DecorationImage(
       image: AssetImage("images/paperold.jpg"),
       fit: BoxFit.fill)),

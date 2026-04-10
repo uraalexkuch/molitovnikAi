@@ -49,27 +49,28 @@ class OfflineTtsService {
       if (!espeakDir.existsSync()) {
         await _copyEspeakData(ttsDir.path);
       }
-      
-      final modelConfig = sherpa.OfflineModelConfig(
-        vits: sherpa.OfflineVitsModelConfig(
+
+      // ВИПРАВЛЕНО: Використовуємо класи TTS замість ASR
+      final modelConfig = sherpa.OfflineTtsModelConfig(
+        vits: sherpa.OfflineTtsVitsModelConfig(
           model: p.join(ttsDir.path, 'uk_UA-ukrainian_tts-medium.onnx'),
           lexicon: "", // Можна залишити порожнім, якщо tokens достатньо
           tokens: p.join(ttsDir.path, 'tokens.txt'),
           dataDir: p.join(ttsDir.path, 'espeak-ng-data'),
           noiseScale: 0.667,
           noiseScaleW: 0.8,
-          lengthPenalty: 1.0,
+          //lengthPenalty: 1.0,
         ),
         numThreads: 1,
         debug: true,
         provider: "cpu",
       );
 
+      // ВИПРАВЛЕНО: Конструктор приймає OfflineTtsConfig як позиційний аргумент
       _tts = sherpa.OfflineTts(
-        config: sherpa.OfflineTtsConfig(
+        sherpa.OfflineTtsConfig(
           model: modelConfig,
           ruleFsts: "",
-          maxNumSentences: 1,
         ),
       );
 
@@ -82,17 +83,19 @@ class OfflineTtsService {
 
   /// Допоміжний метод для копіювання структури espeak-ng-data
   Future<void> _copyEspeakData(String ttsPath) async {
-    final base = 'assets/tts/espeak-ng-data';
+    const base = 'assets/tts/espeak-ng-data';
     final targetBase = p.join(ttsPath, 'espeak-ng-data');
-    
+
     // Список критичних файлів для кирилиці/української
-    // (Примітка: в реальному проекті краще використовувати zip або повний список)
     final files = [
       'config',
       'phontab',
       'phonindex',
       'phondata',
       'intonations',
+      'uk_dict',      // Критично для української
+      'ru_dict',      // Часто використовується як фолбек або для спільних фонетик
+      'en_dict',
     ];
 
     for (final file in files) {
@@ -109,9 +112,19 @@ class OfflineTtsService {
 
   /// Озвучити текст: генерує WAV та відтворює через just_audio
   Future<void> speak(String text) async {
-    if (!_isInitialized || _tts == null) return;
+    if (!_isInitialized || _tts == null) {
+      debugPrint('⚠️ OfflineTtsService: не ініціалізовано. Спроба ініціалізації...');
+      await initialize();
+      if (!_isInitialized || _tts == null) {
+        debugPrint('❌ OfflineTtsService: не вдалося ініціалізувати для виклику speak.');
+        return;
+      }
+    }
 
     try {
+      // Зупиняємо попереднє мовлення перед новим
+      await stop();
+
       final audio = _tts!.generate(text: text, sid: 0, speed: 1.0);
       if (audio.samples.isEmpty) return;
 
@@ -128,13 +141,13 @@ class OfflineTtsService {
 
       final tempDir = await getTemporaryDirectory();
       final tempFile = File(p.join(tempDir.path, 'temp_speech.wav'));
-      
+
       final builder = BytesBuilder();
       builder.add(wavData);
       builder.add(int16Samples.buffer.asUint8List());
-      
+
       await tempFile.writeAsBytes(builder.toBytes());
-      
+
       await _audioPlayer.setFilePath(tempFile.path);
       await _audioPlayer.play();
     } catch (e) {
@@ -142,29 +155,40 @@ class OfflineTtsService {
     }
   }
 
+  /// Зупинити відтворення
+  Future<void> stop() async {
+    try {
+      if (_audioPlayer.playing) {
+        await _audioPlayer.stop();
+      }
+    } catch (e) {
+      debugPrint('⚠️ OfflineTtsService stop error: $e');
+    }
+  }
+
   /// Створення 44-байтного WAV заголовку (PCM)
   Uint8List _createWavHeader(int numSamples, int sampleRate) {
-    final channels = 1;
+    const channels = 1;
     final byteRate = sampleRate * channels * 2;
-    final blockAlign = channels * 2;
+    const blockAlign = channels * 2;
     final dataSize = numSamples * channels * 2;
     final fileSize = 36 + dataSize;
 
     final header = ByteData(44);
-    
+
     // RIFF
     header.setUint8(0, 0x52); // R
     header.setUint8(1, 0x49); // I
     header.setUint8(2, 0x46); // F
     header.setUint8(3, 0x46); // F
     header.setUint32(4, fileSize, Endian.little);
-    
+
     // WAVE
     header.setUint8(8, 0x57); // W
     header.setUint8(9, 0x41); // A
     header.setUint8(10, 0x56); // V
     header.setUint8(11, 0x45); // E
-    
+
     // fmt
     header.setUint8(12, 0x66); // f
     header.setUint8(13, 0x6D); // m
@@ -177,7 +201,7 @@ class OfflineTtsService {
     header.setUint32(28, byteRate, Endian.little);
     header.setUint16(32, blockAlign, Endian.little);
     header.setUint16(34, 16, Endian.little); // bitsPerSample
-    
+
     // data
     header.setUint8(36, 0x64); // d
     header.setUint8(37, 0x61); // a

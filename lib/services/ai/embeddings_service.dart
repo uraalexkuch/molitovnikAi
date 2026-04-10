@@ -1,38 +1,25 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
 
 /// Семантичні вектори для RAG.
-/// Порт з Angular: embeddings.service.ts
 class EmbeddingsService {
   static final EmbeddingsService instance = EmbeddingsService._();
   EmbeddingsService._();
 
-  EmbeddingModel? _embedder;
   bool _isReady = false;
 
   Future<void> initialize() async {
-    try {
-      _embedder = await FlutterGemmaPlugin.instance.createEmbeddingModel();
-      _isReady = true;
-      debugPrint('✅ EmbeddingsService: готово');
-    } catch (e) {
-      debugPrint('⚠️ EmbeddingsService: використовую hash fallback ($e)');
-      _isReady = false;
-    }
+    // У flutter_gemma 0.4.6 немає EmbeddingModel,
+    // тому відразу використовуємо надійний хеш-метод (Fallback).
+    _isReady = true;
+    debugPrint('✅ EmbeddingsService: готово (Hash Mode)');
   }
 
   Future<List<double>> embed(String text) async {
-    if (_isReady && _embedder != null) {
-      try {
-        return await _embedder!.getEmbedding(text);
-      } catch (_) {}
-    }
-    return _hashFallback(text);
+    return hashFallbackSync(text);
   }
 
-  /// Hash-based fallback — детерміністичний, без моделі.
-  /// Порт з Angular embeddings.service.ts
-  List<double> _hashFallback(String text) {
+  /// Hash-based fallback — детерміністичний, без моделі (доступний для Isolates).
+  static List<double> hashFallbackSync(String text) {
     const dim = 384;
     final embedding = List<double>.filled(dim, 0.0);
     final tokens = text

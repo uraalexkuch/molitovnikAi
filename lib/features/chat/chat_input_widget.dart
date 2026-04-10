@@ -56,16 +56,38 @@ class _ChatInputWidgetState extends State<ChatInputWidget> {
       }
 
       bool available = await _speech.initialize(
-        onStatus: (val) => debugPrint('STT Status: $val'),
+        onStatus: (status) {
+          debugPrint('STT Status: $status');
+          if (status == 'done' || status == 'notListening') {
+            if (mounted && _isListening) {
+              setState(() => _isListening = false);
+              // Відправляємо, якщо є текст
+              if (_controller.text.trim().isNotEmpty) {
+                _submit();
+              }
+            }
+          }
+        },
         onError: (val) => debugPrint('STT Error: $val'),
       );
 
       if (available) {
         setState(() => _isListening = true);
         _speech.listen(
-          onResult: (val) => setState(() {
-            _controller.text = val.recognizedWords;
-          }),
+          onResult: (val) {
+            setState(() {
+              _controller.text = val.recognizedWords;
+            });
+            // Якщо це фінальний результат розпізнавання — відправляємо автоматично
+            if (val.finalResult) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted && _isListening) {
+                  setState(() => _isListening = false);
+                  _submit();
+                }
+              });
+            }
+          },
           localeId: 'uk_UA', // Жорстко українська локаль
           cancelOnError: true,
           partialResults: true,
@@ -147,13 +169,13 @@ class _ChatInputWidgetState extends State<ChatInputWidget> {
 
   Widget _buildActionButton() {
     if (widget.isLoading) {
-      return Padding(
-        padding: const EdgeInsets.all(10),
+      return const Padding(
+        padding: EdgeInsets.all(10),
         child: SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
-            strokeWidth: 2,
+            strokeWidth: 2.5,
             color: AppTheme.goldAccent,
           ),
         ),
@@ -161,13 +183,38 @@ class _ChatInputWidgetState extends State<ChatInputWidget> {
     }
 
     // Якщо є текст — показуємо кнопку відправки, інакше — мікрофон
-    return IconButton(
-      onPressed: _hasText ? _submit : _listen,
-      icon: Icon(_hasText ? Icons.send_rounded : (_isListening ? Icons.mic : Icons.mic_none_outlined)),
-      color: _isListening ? Colors.redAccent : AppTheme.goldAccent,
-      style: IconButton.styleFrom(
-        backgroundColor: (_isListening ? Colors.redAccent : AppTheme.goldAccent).withOpacity(0.15),
-        shape: const CircleBorder(),
+    final bool showMic = !_hasText;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: _isListening ? [
+          BoxShadow(
+            color: Colors.redAccent.withOpacity(0.4),
+            blurRadius: 12,
+            spreadRadius: 2,
+          )
+        ] : [],
+      ),
+      child: IconButton(
+        onPressed: showMic ? _listen : _submit,
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            showMic 
+              ? (_isListening ? Icons.mic : Icons.mic_none_rounded)
+              : Icons.send_rounded,
+            key: ValueKey(showMic ? 'mic' : 'send'),
+          ),
+        ),
+        color: _isListening ? Colors.white : Colors.white,
+        style: IconButton.styleFrom(
+          backgroundColor: _isListening 
+            ? Colors.redAccent 
+            : AppTheme.ocuBurgundy.withOpacity(0.9),
+          padding: const EdgeInsets.all(12),
+        ),
       ),
     );
   }

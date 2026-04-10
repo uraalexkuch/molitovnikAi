@@ -9,7 +9,7 @@ class MealItem extends StatelessWidget {
   final String imgPath;
   final int duration;
 
-  MealItem({
+  const MealItem({super.key, 
     required this.id,
     required this.title,
     required this.imgPath,
@@ -49,7 +49,7 @@ class MealItem extends StatelessWidget {
                     bottom: 20,
                     right: 5,
                     child: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         vertical: 5,
                         horizontal: 20,
                       ),
@@ -57,7 +57,7 @@ class MealItem extends StatelessWidget {
                       color: Colors.black54,
                       child: Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: "Church",
                           fontSize: 24,
                           color: Colors.white,

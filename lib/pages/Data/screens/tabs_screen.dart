@@ -7,6 +7,8 @@ import 'categories_screen.dart';
 
 
 class TabScreen extends StatefulWidget {
+  const TabScreen({super.key});
+
   @override
   _TabScreenState createState() => _TabScreenState();
 }
@@ -47,14 +49,14 @@ class _TabScreenState extends State<TabScreen> {
                 flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,
                     title: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         vertical: 2,
                         horizontal: 20,
                       ),
                       width: MediaQuery.of(context).size.width * 0.5,
                       height: MediaQuery.of(context).size.height * 0.08,
                       color: Colors.black54,
-                      child: Center(
+                      child: const Center(
                         child: Text(
                           "МОЛИТОВНИК ВОЇНА",
                           style: TextStyle(
@@ -94,17 +96,17 @@ class _TabScreenState extends State<TabScreen> {
                 iconData: Icons.library_books,
                 title: "Текст",
                 onclick: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CategoriesScreen()))),
+                    builder: (context) => const CategoriesScreen()))),
             TabData(
                 iconData: Icons.multitrack_audio,
                 title: "Аудіо",
                 onclick: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ManagePlaylist()))),
+                    builder: (context) => const ManagePlaylist()))),
             TabData(
                 iconData: Icons.home,
                 title: "Про затсосунок",
                 onclick: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => About()))),
+                    builder: (context) => const About()))),
           ],
           initialSelection: 0,
           key: bottomNavigationKey,
@@ -119,13 +121,13 @@ class _TabScreenState extends State<TabScreen> {
   _getPage(int page) {
     switch (page) {
       case 0:
-        return CategoriesScreen();
+        return const CategoriesScreen();
       case 1:
-        return ManagePlaylist();
+        return const ManagePlaylist();
       case 2:
-        return About();
+        return const About();
       default:
-        return CategoriesScreen();
+        return const CategoriesScreen();
     }
   }
 }

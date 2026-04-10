@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
-void main() => runApp(Player());
+void main() => runApp(const Player());
 
 class Player extends StatefulWidget {
   static const routeName = '/category-player';
+
+  const Player({super.key});
 
   @override
   _PlayerState createState() => _PlayerState();
@@ -255,7 +257,7 @@ class _PlayerState extends State<Player> {
   void initState() {
     super.initState();
     _player = AudioPlayer();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
     _init();
@@ -263,7 +265,7 @@ class _PlayerState extends State<Player> {
 
   Future<void> _init() async {
     final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration.music());
+    await session.configure(const AudioSessionConfiguration.music());
     final mealId = ModalRoute.of(context)!.settings.arguments as String;
     // Listen to errors during playback.
     _player.playbackEventStream.listen((event) {},
@@ -305,7 +307,7 @@ class _PlayerState extends State<Player> {
             home: Scaffold(
               body: SafeArea(
                   child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage("images/paperold.jpg"),
                         fit: BoxFit.fill)),
@@ -313,7 +315,7 @@ class _PlayerState extends State<Player> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
+                          SizedBox(
                             width: 100.w,
                             height: 35.h,
 
@@ -321,8 +323,9 @@ class _PlayerState extends State<Player> {
                                 stream: _player.sequenceStateStream,
                                 builder: (context, snapshot) {
                                   final state = snapshot.data;
-                                  if (state?.sequence.isEmpty ?? true)
-                                    return SizedBox();
+                                  if (state?.sequence.isEmpty ?? true) {
+                                    return const SizedBox();
+                                  }
                                   final metadata =
                                       state!.currentSource!.tag as AudioMetadata;
                                   return Column(
@@ -360,7 +363,7 @@ class _PlayerState extends State<Player> {
                                         ),
                                       ),
                                       ControlButtons(_player),
-                                    SizedBox(height: 8.0),
+                                    const SizedBox(height: 8.0),
                                       Row(
                                         children: [
                                           Expanded(
@@ -384,7 +387,7 @@ class _PlayerState extends State<Player> {
                             ),
 
 
-                          Container(
+                          SizedBox(
                             width: 100.w,
                             height: 60.h,
                             child: Container(
@@ -459,7 +462,7 @@ class _PlayerState extends State<Player> {
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
 
-  ControlButtons(this.player);
+  const ControlButtons(this.player, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -467,7 +470,7 @@ class ControlButtons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
          IconButton(
-            icon: Icon(Icons.volume_up_sharp),
+            icon: const Icon(Icons.volume_up_sharp),
             onPressed: () {
               _showSliderDialog(
                 context: context,
@@ -483,7 +486,7 @@ class ControlButtons extends StatelessWidget {
        StreamBuilder<SequenceState?>(
             stream: player.sequenceStateStream,
             builder: (context, snapshot) => IconButton(
-              icon: Icon(Icons.skip_previous),
+              icon: const Icon(Icons.skip_previous),
               onPressed: player.hasPrevious ? player.seekToPrevious : null,
             ),
           ),
@@ -497,26 +500,26 @@ class ControlButtons extends StatelessWidget {
               if (processingState == ProcessingState.loading ||
                   processingState == ProcessingState.buffering) {
                 return Container(
-                  margin: EdgeInsets.all(8.0),
+                  margin: const EdgeInsets.all(8.0),
                   width: 24.0.sp,
                   height: 24.0.sp,
-                  child: CircularProgressIndicator(),
+                  child: const CircularProgressIndicator(),
                 );
               } else if (playing != true) {
                 return IconButton(
-                  icon: Icon(Icons.play_circle_outline),
+                  icon: const Icon(Icons.play_circle_outline),
                   iconSize: 35.0.sp,
                   onPressed: player.play,
                 );
               } else if (processingState != ProcessingState.completed) {
                 return IconButton(
-                  icon: Icon(Icons.pause_circle_outline),
+                  icon: const Icon(Icons.pause_circle_outline),
                   iconSize: 35.0.sp,
                   onPressed: player.pause,
                 );
               } else {
                 return IconButton(
-                  icon: Icon(Icons.reply_rounded),
+                  icon: const Icon(Icons.reply_rounded),
                   iconSize: 24.0.sp,
                   onPressed: () => player.seek(Duration.zero,
                       index: player.effectiveIndices!.first),
@@ -528,7 +531,7 @@ class ControlButtons extends StatelessWidget {
  StreamBuilder<SequenceState?>(
             stream: player.sequenceStateStream,
             builder: (context, snapshot) => IconButton(
-              icon: Icon(Icons.skip_next_rounded),
+              icon: const Icon(Icons.skip_next_rounded),
               onPressed: player.hasNext ? player.seekToNext : null,
             ),
           ),
@@ -538,7 +541,7 @@ class ControlButtons extends StatelessWidget {
             stream: player.speedStream,
             builder: (context, snapshot) => IconButton(
               icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               onPressed: () {
                 _showSliderDialog(
                   context: context,
@@ -578,12 +581,12 @@ void _showSliderDialog({
       title: Text(title, textAlign: TextAlign.center),
       content: StreamBuilder<double>(
         stream: stream,
-        builder: (context, snapshot) => Container(
+        builder: (context, snapshot) => SizedBox(
           height: 100.0,
           child: Column(
             children: [
               Text('${snapshot.data?.toStringAsFixed(1)}$valueSuffix',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontFamily: 'Fixed',
                       fontWeight: FontWeight.bold,
                       fontSize: 24.0)),

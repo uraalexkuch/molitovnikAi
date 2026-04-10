@@ -1,7 +1,7 @@
 
 import 'package:molitovnik/models/prayerbook/category.dart';
 
-const DUMMY_CATEGORIES = const [
+const DUMMY_CATEGORIES = [
   Category(
     id: 'c1',
     imgPath: "assets/images/OCU_logo.png",

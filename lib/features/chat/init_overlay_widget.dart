@@ -16,7 +16,7 @@ class InitOverlayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppTheme.backgroundDark.withOpacity(0.96),
+      color: AppTheme.backgroundLight.withOpacity(0.98),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -36,7 +36,7 @@ class InitOverlayWidget extends StatelessWidget {
 
               const Text(
                 'Духовна підтримка захисників України',
-                style: TextStyle(color: Colors.white54, fontSize: 13),
+                style: TextStyle(color: AppTheme.textDim, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -64,7 +64,7 @@ class InitOverlayWidget extends StatelessWidget {
                       Text(
                         msg,
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: AppTheme.textMain,
                           fontSize: 13,
                         ),
                         textAlign: TextAlign.center,
@@ -75,7 +75,7 @@ class InitOverlayWidget extends StatelessWidget {
                           child: Text(
                             '$percent%',
                             style: TextStyle(
-                              color: AppTheme.goldAccent.withOpacity(0.7),
+                              color: AppTheme.ocuBurgundy.withOpacity(0.7),
                               fontSize: 12,
                             ),
                           ),
@@ -91,10 +91,10 @@ class InitOverlayWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
+                  color: AppTheme.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.goldAccent.withOpacity(0.2),
+                    color: AppTheme.goldAccent.withOpacity(0.3),
                   ),
                 ),
                 child: const Text(
@@ -102,7 +102,7 @@ class InitOverlayWidget extends StatelessWidget {
                   'Потрібне з\'єднання з інтернетом один раз.\n'
                   'Далі — повністю офлайн.',
                   style: TextStyle(
-                    color: Colors.white54,
+                    color: AppTheme.textDim,
                     fontSize: 12,
                     height: 1.5,
                   ),

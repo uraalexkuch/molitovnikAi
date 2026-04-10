@@ -12,12 +12,7 @@ class PrayerbookScreen extends StatelessWidget {
       builder: (context, orientation, deviceType) {
         return Scaffold(
           body: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/paperold.jpg"),
-                fit: BoxFit.fill,
-              ),
-            ),
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: GridView.builder(
               padding: EdgeInsets.all(15.sp),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import '../../core/theme/app_theme.dart';
 import 'package:molitovnik/pages/Data/dummy_data.dart';
 import 'package:molitovnik/features/prayerbook/widgets/prayer_card.dart';
 
@@ -23,9 +24,8 @@ class PrayerListScreen extends StatelessWidget {
       builder: (context, orientation, deviceType) {
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.black87,
              leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+             icon: const Icon(Icons.arrow_back, color: AppTheme.ocuBurgundy),
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: Text(
@@ -33,17 +33,12 @@ class PrayerListScreen extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Church",
                 fontSize: 20.sp,
-                color: Colors.white,
+                color: AppTheme.ocuBurgundy,
               ),
             ),
           ),
           body: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/paperold.jpg"),
-                fit: BoxFit.fill,
-              ),
-            ),
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: GridView.builder(
               padding: EdgeInsets.all(15.sp),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

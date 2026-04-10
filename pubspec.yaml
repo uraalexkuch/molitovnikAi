@@ -18,13 +18,14 @@ dependencies:
   sizer: ^2.0.15
   responsive_sizer: ^3.0.4+4
   flutter_markdown: ^0.6.18
+  intl: ^0.19.0
 
   # State Management (Управління станом)
   provider: ^6.1.2
 
   # AI & Голос (Локально / Офлайн)
-  flutter_gemma: ^0.4.0
-  speech_to_text: ^6.6.2
+  flutter_gemma: ^0.13.2
+  speech_to_text: ^7.3.0
   sherpa_onnx: any
   permission_handler: ^11.3.0
   just_audio: ^0.9.40
@@ -63,9 +64,11 @@ flutter:
   # ВАЖЛИВО: assets має бути ПІД flutter (з відступом 2 пробіли)
   assets:
     - assets/images/
-    - assets/tts/
+    - assets/tts/uk_UA-ukrainian_tts-medium.onnx
+    - assets/tts/tokens.txt
     - assets/tts/espeak-ng-data/
     - assets/knowledge_base/
+    - assets/data/
 
 fonts:
   - family: Church

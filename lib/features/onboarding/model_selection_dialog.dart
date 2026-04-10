@@ -9,6 +9,11 @@ class ModelSelectionDialog extends StatefulWidget {
   const ModelSelectionDialog({super.key, this.isMandatory = false});
 
   static Future<void> show(BuildContext context, {bool isMandatory = false}) async {
+    if (isMandatory) {
+      final hasModel = await ModelManagementService().isAnyModelDownloaded();
+      if (hasModel) return;
+    }
+
     return showDialog(
       context: context,
       barrierDismissible: !isMandatory,
@@ -27,15 +32,24 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Пропонуємо Gemma 4 за замовчуванням
+    if (_modelService.availableModels.isNotEmpty) {
+      _selectedModel = _modelService.availableModels.first;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => !widget.isMandatory,
       child: Dialog(
-        backgroundColor: AppTheme.backgroundDark,
+        backgroundColor: AppTheme.backgroundLight,
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: AppTheme.liturgicalRed.withOpacity(0.3), width: 1),
+          side: BorderSide(color: AppTheme.ocuBurgundy.withOpacity(0.3), width: 1),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -43,8 +57,8 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             image: DecorationImage(
               image: const AssetImage("assets/images/paperold.jpg"),
               fit: BoxFit.cover,
-              opacity: 0.03,
-              colorFilter: ColorFilter.mode(AppTheme.backgroundDark.withOpacity(0.8), BlendMode.darken),
+              opacity: 0.1,
+              colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.9), BlendMode.lighten),
             ),
           ),
           child: Padding(
@@ -56,10 +70,9 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 40),
-                    const Icon(Icons.auto_awesome_rounded, color: AppTheme.goldAccent, size: 40),
                     if (!widget.isMandatory && !_isDownloading)
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54),
+                        icon: const Icon(Icons.close, color: AppTheme.textDim),
                         onPressed: () => Navigator.pop(context),
                       )
                     else
@@ -70,7 +83,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                 Text(
                   'Штучний Інтелект',
                   style: TextStyle(
-                    color: AppTheme.goldAccent,
+                    color: AppTheme.ocuBurgundy,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Church',
@@ -81,7 +94,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                   const Text(
                     'Капелан потребує модель для автономної роботи. Оберіть варіант під ваш пристрій.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppTheme.parchment, fontSize: 14, height: 1.4),
+                    style: TextStyle(color: AppTheme.textMain, fontSize: 14, height: 1.4),
                   ),
                   const SizedBox(height: 24),
                   ..._modelService.availableModels.map((model) => _buildModelOption(model)),
@@ -96,7 +109,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                     child: ElevatedButton(
                       onPressed: _selectedModel == null ? null : _startDownload,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.liturgicalRed,
+                        backgroundColor: AppTheme.ocuBurgundy,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -127,18 +140,25 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.liturgicalRed.withOpacity(0.15) : AppTheme.surfaceDark,
+          color: isSelected ? AppTheme.ocuBurgundy.withOpacity(0.08) : AppTheme.surfaceLight,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppTheme.liturgicalRed : Colors.white10,
+            color: isSelected ? AppTheme.ocuBurgundy : AppTheme.goldAccent.withOpacity(0.15),
             width: 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ]
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AppTheme.liturgicalRed : Colors.white38,
+              color: isSelected ? AppTheme.ocuBurgundy : AppTheme.textDim.withOpacity(0.5),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -148,7 +168,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                   Text(
                     model.name,
                     style: TextStyle(
-                      color: isSelected ? AppTheme.goldLight : Colors.white,
+                      color: isSelected ? AppTheme.ocuBurgundy : AppTheme.textMain,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -156,7 +176,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
                   const SizedBox(height: 2),
                   Text(
                     model.description,
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                    style: const TextStyle(color: AppTheme.textDim, fontSize: 12),
                   ),
                 ],
               ),
@@ -165,7 +185,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: AppTheme.surfaceMid,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -185,9 +205,9 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
       builder: (context, progress, child) {
         return Column(
           children: [
-            const Icon(Icons.downloading, color: AppTheme.liturgicalRed, size: 48),
+            const Icon(Icons.downloading, color: AppTheme.ocuBurgundy, size: 48),
             const SizedBox(height: 16),
-             Text(
+             const Text(
               'Завантаження сувоїв...',
               style: TextStyle(color: AppTheme.goldAccent, fontSize: 16, fontFamily: 'Church'),
             ),
@@ -196,8 +216,8 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white10,
-                color: AppTheme.liturgicalRed,
+                backgroundColor: AppTheme.surfaceMid,
+                color: AppTheme.ocuBurgundy,
                 minHeight: 12,
               ),
             ),
@@ -210,7 +230,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             const Text(
               'Не закривайте додаток. Ми наповнюємо капелана мудрістю.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white38, fontSize: 13, fontStyle: FontStyle.italic),
+              style: TextStyle(color: AppTheme.textDim, fontSize: 13, fontStyle: FontStyle.italic),
             ),
           ],
         );
@@ -234,7 +254,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('ШІ-модель завантажена успішно!'),
-              backgroundColor: AppTheme.liturgicalRed,
+              backgroundColor: AppTheme.ocuBurgundy,
             ),
           );
         }

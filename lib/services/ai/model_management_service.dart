@@ -32,20 +32,28 @@ class ModelManagementService {
 
   final List<AIModel> availableModels = [
     AIModel(
+      id: 'gemma4_2b',
+      name: 'Gemma 4 E2B IT (Pro)',
+      description: 'Найновіша модель (2026). Найкраща якість та розуміння української мови. Рекомендовано (8ГБ+ RAM).',
+      url: 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm',
+      fileName: 'gemma4_2b_it.litertlm',
+      sizeInGb: 2.6,
+    ),
+    AIModel(
+      id: 'gemma_2_2b',
+      name: 'Gemma 2 2B IT (Stable)',
+      description: 'Стабільний аналог 4-ї серії. Висока якість відповідей та перевірена надійність. Рекомендовано (6ГБ+ RAM).',
+      url: 'https://huggingface.co/google/gemma-2-2b-it-task-mediapipe/resolve/main/gemma-2-2b-it-int4.task',
+      fileName: 'gemma_2_2b_it.task',
+      sizeInGb: 2.6,
+    ),
+    AIModel(
       id: 'gemma_1b',
       name: 'Gemma 3 1B IT (Lite)',
-      description: 'Швидка та легка модель. Ідеально для телефонів з середніми характеристиками.',
+      description: 'Швидка та легка модель. Іноді може працювати нестабільно на слабких пристроях. (4ГБ RAM).',
       url: 'https://huggingface.co/litert-community/gemma-3-1B-IT/resolve/main/gemma3-1b-it-int4.task',
       fileName: 'gemma3_1b_it_int4.task',
       sizeInGb: 0.8,
-    ),
-    AIModel(
-      id: 'gemma_2b',
-      name: 'Gemma 2 2B IT (Pro)',
-      description: 'Вища якість відповідей. Потребує більше оперативної пам\'яті (8ГБ+).',
-      url: 'https://huggingface.co/google/gemma-2-2b-it-gpu-int4/resolve/main/gemma-2-2b-it-gpu-int4.task',
-      fileName: 'gemma2_2b_it_int4.task',
-      sizeInGb: 1.4,
     ),
   ];
 
@@ -63,9 +71,18 @@ class ModelManagementService {
     final prefs = await SharedPreferences.getInstance();
     final isDownloaded = prefs.getBool('$_modelPrefixKey$modelId') ?? false;
     
-    if (isDownloaded) {
+    // Також перевіряємо старий ключ з ModelDownloaderService для ретро-сумісності
+    final isOldDownloaded = prefs.getBool('model_downloaded_v1') ?? false;
+
+    if (isDownloaded || isOldDownloaded) {
       final file = File(await getModelPath(modelId));
-      return await file.exists();
+      if (await file.exists()) return true;
+
+      // Спроба знайти в Documents (старий шлях)
+      final docDir = await getApplicationDocumentsDirectory();
+      final model = availableModels.firstWhere((m) => m.id == modelId);
+      final docFile = File('${docDir.path}/${model.fileName}');
+      return await docFile.exists();
     }
     return false;
   }
@@ -79,15 +96,29 @@ class ModelManagementService {
   Future<String?> getActiveModelPath() async {
     final prefs = await SharedPreferences.getInstance();
     final modelId = prefs.getString(_currentModelIdKey);
-    if (modelId != null && await isModelDownloaded(modelId)) {
-      return getModelPath(modelId);
+    
+    if (modelId != null) {
+      final path = await getModelPath(modelId);
+      if (await File(path).exists()) return path;
+
+      // Спроба знайти в Documents (старий шлях)
+      final docDir = await getApplicationDocumentsDirectory();
+      final model = availableModels.firstWhere((m) => m.id == modelId);
+      final docPath = '${docDir.path}/${model.fileName}';
+      if (await File(docPath).exists()) return docPath;
     }
     
-    // Fallback до першої завантаженої моделі
+    // Fallback до першої завантаженої моделі (якщо раптом ID не зберігся)
     for (var model in availableModels) {
       if (await isModelDownloaded(model.id)) {
         await prefs.setString(_currentModelIdKey, model.id);
-        return getModelPath(model.id);
+        
+        final path = await getModelPath(model.id);
+        if (await File(path).exists()) return path;
+        
+        final docDir = await getApplicationDocumentsDirectory();
+        final docPath = '${docDir.path}/${model.fileName}';
+        if (await File(docPath).exists()) return docPath;
       }
     }
     return null;
@@ -104,8 +135,14 @@ class ModelManagementService {
     final task = DownloadTask(
       url: model.url,
       filename: model.fileName,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+      },
       baseDirectory: BaseDirectory.applicationSupport,
       updates: Updates.statusAndProgress,
+      retries: 5,
+      allowPause: true,
     );
 
     FileDownloader().configureNotification(

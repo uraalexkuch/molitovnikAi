@@ -2,13 +2,14 @@ import 'dart:core';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import '../services/ai/rag_service.dart';
 
 // Наследуемся от виджета с состоянием,
 // то есть виджет для изменения состояния которого не требуется пересоздавать его инстанс
 class SplashScreen extends StatefulWidget {
 
   final String nextRoute;
-  SplashScreen({required this.nextRoute});
+  const SplashScreen({super.key, required this.nextRoute});
 
   // все подобные виджеты должны создавать своё состояние,
   // нужно переопределять данный метод
@@ -18,9 +19,9 @@ class SplashScreen extends StatefulWidget {
 
 extension ColorExtension on String {
   toColor() {
-    var hexColor = this.replaceAll("#", "");
+    var hexColor = replaceAll("#", "");
     if (hexColor.length == 6) {
-      hexColor = "FF" + hexColor;
+      hexColor = "FF$hexColor";
     }
     if (hexColor.length == 8) {
       return Color(int.parse("0x$hexColor"));
@@ -37,9 +38,12 @@ class _SplashScreenState extends State<SplashScreen>
   // Инициализация состояния
   @override
   void initState() {
-  super.initState();
+    super.initState();
+    
+    // Запуск фонової ініціалізації RAG бази знань (ліниве завантаження)
+    _initializeBackgroundServices();
   // Создаём таймер, который должен будет переключить SplashScreen на HomeScreen через 2 секунды
-  Timer(Duration(seconds: 7),
+  Timer(const Duration(seconds: 7),
   // Для этого используется статический метод навигатора
   // Это очень похоже на передачу лямбда функции в качестве аргумента std::function в C++
   () {
@@ -61,6 +65,14 @@ class _SplashScreenState extends State<SplashScreen>
   super.dispose();
   }
 
+  Future<void> _initializeBackgroundServices() async {
+    try {
+      await RAGService().initialize();
+    } catch (e) {
+      debugPrint("Фонова ініціалізація RAG завершилась помилкою: $e");
+    }
+  }
+
   // Формирование виджета
   @override
   Widget build(BuildContext context) {
@@ -78,8 +90,8 @@ class _SplashScreenState extends State<SplashScreen>
   body: Center(
   child: Device.orientation == Orientation.portrait
       ? Container(
-      constraints: BoxConstraints.expand(),
-      decoration: BoxDecoration(
+      constraints: const BoxConstraints.expand(),
+      decoration: const BoxDecoration(
           image: DecorationImage(
               image: AssetImage('images/ua1.gif'),
               fit: BoxFit.fitHeight)
@@ -104,8 +116,8 @@ class _SplashScreenState extends State<SplashScreen>
   ):
   Container(
 
-    constraints: BoxConstraints.expand(),
-    decoration: BoxDecoration(
+    constraints: const BoxConstraints.expand(),
+    decoration: const BoxDecoration(
         image: DecorationImage(
            image: AssetImage('images/ua1.gif'),
             fit: BoxFit.contain),

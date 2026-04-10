@@ -7,13 +7,13 @@ class MealDetailScreen extends StatelessWidget {
 
   final String imgPath;
 
-  MealDetailScreen({
+  const MealDetailScreen({super.key, 
     required this.imgPath,
   });
 
   Widget buildSectionTitle(BuildContext context, String title) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       child: Text(
         title,
 
@@ -28,8 +28,8 @@ class MealDetailScreen extends StatelessWidget {
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(15),
         ),
-        margin: EdgeInsets.all(10),
-        padding: EdgeInsets.all(10),
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         height: 200,
         width: 300,
         child: child);
@@ -92,7 +92,7 @@ class MealDetailScreen extends StatelessWidget {
                           Column(
                             children: <Widget>[
                               Container(
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                     image: DecorationImage(
                                         image: AssetImage("images/paperold.jpg"),
                                         fit: BoxFit.fill)),
@@ -123,13 +123,13 @@ class MealDetailScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Divider(),
+                              const Divider(),
                               Image(
-                                image: AssetImage("images/b.png"),
+                                image: const AssetImage("images/b.png"),
                                 height: 6.h,
                                 width:  30.w,
                               ),
-                              Divider(),
+                              const Divider(),
                             ],
                           ),
                       itemCount: selectedMeal.steps.length,

@@ -12,8 +12,7 @@ class ChatMessageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment:
-            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!message.isUser) ...[
@@ -24,9 +23,7 @@ class ChatMessageWidget extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: message.isUser
-                    ? AppTheme.userBubble
-                    : AppTheme.aiBubble,
+                color: message.isUser ? AppTheme.userBubble : AppTheme.aiBubble,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -35,16 +32,23 @@ class ChatMessageWidget extends StatelessWidget {
                 ),
                 border: Border.all(
                   color: message.isUser
-                      ? AppTheme.goldAccent.withOpacity(0.3)
-                      : AppTheme.iconsBlue.withOpacity(0.2),
+                      ? Colors.transparent
+                      : AppTheme.ocuBurgundy.withOpacity(0.15),
                   width: 0.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ]
               ),
               child: message.isUser
                   ? SelectableText(
                       message.text,
                       style: const TextStyle(
-                        color: AppTheme.parchment,
+                        color: AppTheme.textMain,
                         fontSize: 15,
                       ),
                     )
@@ -52,26 +56,26 @@ class ChatMessageWidget extends StatelessWidget {
                       data: message.text.isEmpty ? '▌' : message.text,
                       styleSheet: MarkdownStyleSheet(
                         p: const TextStyle(
-                          color: AppTheme.parchment,
+                          color: AppTheme.textMain,
                           fontSize: 15,
                           height: 1.5,
                         ),
                         strong: const TextStyle(
-                          color: AppTheme.goldLight,
+                          color: AppTheme.ocuBurgundy,
                           fontWeight: FontWeight.bold,
                         ),
                         em: const TextStyle(
-                          color: AppTheme.parchment,
+                          color: AppTheme.textMain,
                           fontStyle: FontStyle.italic,
                         ),
                         blockquote: const TextStyle(
-                          color: Colors.white70,
+                          color: AppTheme.textDim,
                           fontStyle: FontStyle.italic,
                         ),
-                        blockquoteDecoration: const BoxDecoration(
+                        blockquoteDecoration: BoxDecoration(
                           border: Border(
                             left: BorderSide(
-                              color: AppTheme.goldAccent,
+                              color: AppTheme.goldAccent.withOpacity(0.5),
                               width: 3,
                             ),
                           ),
@@ -80,7 +84,6 @@ class ChatMessageWidget extends StatelessWidget {
                     ),
             ),
           ),
-          if (message.isUser) const SizedBox(width: 8),
         ],
       ),
     );
@@ -97,11 +100,11 @@ class _AiAvatar extends StatelessWidget {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppTheme.iconsBlue.withOpacity(0.2),
+        color: AppTheme.surfaceLight,
         border: Border.all(color: AppTheme.goldAccent.withOpacity(0.4)),
       ),
       child: const Center(
-        child: Text('🕯️', style: TextStyle(fontSize: 16)),
+        child: Text('🕊️', style: TextStyle(fontSize: 16)), // Голуб миру
       ),
     );
   }

@@ -5,9 +5,11 @@ import 'package:molitovnik/pages/Play/player.dart';
 
 
 class FavoritesScreen extends StatelessWidget {
+  const FavoritesScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return  SafeArea(
+    return  const SafeArea(
               left: true,
               top: true,
               right: true,
